@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSC ID Search Portal</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 15px; }
+    .container { max-width: 800px; margin: 10px auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    h2 { text-align: center; color: #333; font-size: 20px; margin-bottom: 20px; }
+    .search-box { display: flex; gap: 10px; margin-bottom: 20px; }
+    input[type="text"] { flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; outline: none; }
+    button { padding: 12px 20px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; font-weight: bold; }
+    .table-container { width: 100%; overflow-x: auto; margin-top: 15px; }
+    table { width: 100%; border-collapse: collapse; background: #ffffff; border: 1px solid #a6a6a6; }
+    th, td { padding: 8px 10px; text-align: left; border: 1px solid #b0b0b0; font-size: 14px; white-space: nowrap; }
+    th { background-color: #f2f2f2; color: #000; font-weight: bold; }
+    .user-table { width: auto; margin-bottom: 20px; }
+    .user-table th { background-color: #e9ecef; }
+    .message { text-align: center; color: #d9534f; margin-top: 15px; font-size: 15px; font-weight: bold; }
+    .loader { text-align: center; display: none; color: #007bff; margin: 15px 0; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>CSC ID Search Portal</h2>
+  
+  <div class="search-box">
+    <input type="text" id="cscIdInput" placeholder="Enter CSC ID..." onkeypress="if(event.key === 'Enter') searchCSC()" />
+    <button onclick="searchCSC()">Search</button>
+  </div>
+
+  <div id="loader" class="loader">🔍 Searching...</div>
+  <div id="output"></div>
+</div>
+
+<script>
+  // Yahan apna Apps Script Web App URL daalein
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwLs9Vsh1h9rt14RWL6vvPwd19_Hw7peiQzKDkoZuNZxtgDoz29wWaTxkCWWYeYVLdy/exec";
+
+  function searchCSC() {
+    const id = document.getElementById("cscIdInput").value.trim();
+    const output = document.getElementById("output");
+    const loader = document.getElementById("loader");
+
+    if (!id) {
+      output.innerHTML = "<p class='message'>⚠️ Kripya CSC ID darj karein!</p>";
+      return;
+    }
+
+    output.innerHTML = "";
+    loader.style.display = "block";
+
+    fetch(`${SCRIPT_URL}?cscId=${encodeURIComponent(id)}`)
+      .then(res => res.json())
+      .then(response => {
+        loader.style.display = "none";
+        
+        if (response.status === "success") {
+          const user = response.user;
+          const rows = response.data;
+
+          let html = `<div class='table-container'>`;
+          
+          // User Details Table
+          html += `<table class='user-table'>
+                    <thead><tr><th>CSC id</th><th>Name</th><th>District</th></tr></thead>
+                    <tbody><tr><td>${user.cscId}</td><td>${user.name}</td><td>${user.district}</td></tr></tbody>
+                   </table>`;
+
+          // Month Data Table
+          html += `<table>
+                    <thead><tr>
+                      <th>SN</th>
+                      <th>Month</th>
+                      <th>Registration</th>
+                      <th>Total Payment</th>
+                      <th>Payment Status</th>
+                    </tr></thead><tbody>`;
+
+          rows.forEach(row => {
+            html += `<tr>
+                      <td>${row.sn}</td>
+                      <td>${row.month}</td>
+                      <td>${row.registration}</td>
+                      <td>${row.totalPayment}</td>
+                      <td>${row.paymentStatus}</td>
+                    </tr>`;
+          });
+
+          html += `</tbody></table></div>`;
+          output.innerHTML = html;
+
+        } else {
+          output.innerHTML = `<p class='message'>${response.message}</p>`;
+        }
+      })
+      .catch(err => {
+        loader.style.display = "none";
+        output.innerHTML = `<p class='message'>Error loading data. Try again.</p>`;
+      });
+  }
+</script>
+
+</body>
+</html>
