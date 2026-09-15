@@ -1,297 +1,37 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CSC VLE Training Attendance Form</title>
-
+  <title>CSC ID Search Portal</title>
   <style>
-    * {
-      box-sizing: border-box;
+    * { 
+      margin: 0; 
+      padding: 0; 
+      box-sizing: border-box; 
     }
-
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
-      background: #f2f5f9;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+    html, body { 
+      width: 100%; 
+      height: 100%; 
+      overflow: hidden; 
+      background-color: #f1f5f9; 
     }
-
-    .container {
-      width: 92%;
-      max-width: 500px;
-      background: #ffffff;
-      border-radius: 16px;
-      padding: 30px 25px;
-      box-shadow: 0 5px 25px rgba(0,0,0,0.12);
-      text-align: center;
-    }
-
-    .logo {
-      font-size: 45px;
-      margin-bottom: 10px;
-    }
-
-    h1 {
-      margin: 5px 0 4px;
-      font-size: 22px;
-      color: #1f2937;
-    }
-
-    h2 {
-      margin: 0 0 18px;
-      font-size: 18px;
-      color: #2563eb;
-      font-weight: 600;
-    }
-
-    .subtitle {
-      font-size: 15px;
-      color: #6b7280;
-      margin-bottom: 25px;
-      line-height: 1.5;
-    }
-
-    label {
-      display: block;
-      text-align: left;
-      font-size: 14px;
-      font-weight: bold;
-      color: #374151;
-      margin-bottom: 8px;
-    }
-
-    /* Masked Password Field Styling */
-    .password-wrapper {
-      position: relative;
-      width: 100%;
-    }
-
-    .password-mask {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 14px;
-      pointer-events: none;
-      font-size: 26px;
-      color: #d1d5db; /* Unfilled light dots */
-    }
-
-    .password-mask span.filled {
-      color: #1f2937; /* Typed dark dots */
-    }
-
-    input {
-      width: 100%;
-      padding: 14px;
-      border: 1px solid #d1d5db;
-      border-radius: 8px;
-      font-size: 18px;
-      text-align: center;
-      outline: none;
-      background: transparent;
-      color: transparent; /* Text hidden to reveal dynamic mask */
-      caret-color: #2563eb;
-      letter-spacing: 12px;
-    }
-
-    input:focus {
-      border-color: #2563eb;
-      box-shadow: 0 0 0 2px rgba(37,99,235,0.12);
-    }
-
-    button {
-      width: 100%;
-      margin-top: 22px;
-      padding: 14px;
-      border: none;
-      border-radius: 8px;
-      background: #2563eb;
-      color: white;
-      font-size: 17px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    button:disabled {
-      background: #93c5fd;
-      cursor: not-allowed;
-    }
-
-    .message {
-      margin-top: 15px;
-      min-height: 22px;
-      font-size: 14px;
-      font-weight: bold;
-    }
-
-    .error {
-      color: #dc2626;
-    }
-
-    .loading {
-      color: #2563eb;
-    }
-
-    .footer {
-      margin-top: 25px;
-      font-size: 12px;
-      color: #9ca3af;
-    }
-
-    #formContainer {
-      display: none;
-      width: 100%;
-      min-height: 100vh;
-      background: #ffffff;
-    }
-
-    #googleForm {
-      width: 100%;
-      height: 100vh;
-      min-height: 800px;
-      border: none;
-      display: block;
+    iframe { 
+      width: 100%; 
+      height: 100%; 
+      border: none; 
     }
   </style>
 </head>
-
 <body>
 
-  <!-- LOGIN CONTAINER -->
-  <div class="container" id="passwordContainer">
-    <div class="logo">📋</div>
-    <h1>CSC VLE Attendance For</h1>
-    <h2>Labour eKYC Training</h2>
-    
-    <div class="subtitle">
-      Attendance Form खोलने के लिए<br>
-      कृपया Training Password दर्ज करें।
-    </div>
+  <!-- Mobile Compatibility Parameters Enabled -->
+  <iframe 
+    src="https://script.google.com/macros/s/AKfycbzWeLUVwl6W9ghVC4VqwdVJhrYdkv1X3ES17DzYq6HOyKbcrxUo1Sk1R5UhNLu9kRim/exec?embed=1" 
+    allow="geolocation; microphone; camera;"
+    sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
+    style="width:100%; height:100vh; border:none;">
+  </iframe>
 
-    <form id="passwordForm">
-      <label for="password">Password</label>
-      
-      <div class="password-wrapper">
-        <div class="password-mask" id="passwordMask">
-          <span>•</span><span>•</span><span>•</span><span>•</span><span>•</span><span>•</span>
-        </div>
-        
-        <input 
-          type="password" 
-          inputmode="numeric" 
-          id="password" 
-          maxlength="6" 
-          autocomplete="off" 
-          oninput="updateMask(this)"
-          required
-        >
-      </div>
-
-      <button type="submit" id="verifyButton">Verify & Continue</button>
-    </form>
-
-    <div id="message" class="message"></div>
-    <div class="footer">CSC State Office</div>
-  </div>
-
-  <!-- GOOGLE FORM CONTAINER -->
-  <div id="formContainer">
-    <iframe id="googleForm" src="" frameborder="0">Loading Form...</iframe>
-  </div>
-
-  <script>
-    // Configured Web App Executable URL
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw-qwTWhwPqKjfT4SyuGZwo8dnqneYpdArrE_a0ggEp09QAt2OrhSyNrjMXglpCrAyE6w/exec";
-
-    const passwordForm = document.getElementById("passwordForm");
-    const passwordInput = document.getElementById("password");
-    const verifyButton = document.getElementById("verifyButton");
-    const message = document.getElementById("message");
-    const passwordContainer = document.getElementById("passwordContainer");
-    const formContainer = document.getElementById("formContainer");
-    const googleForm = document.getElementById("googleForm");
-
-    // Dynamic Mask Overlay Handler
-    function updateMask(input) {
-      // Force Numeric input only
-      input.value = input.value.replace(/[^0-9]/g, '');
-      
-      const len = input.value.length;
-      const spans = document.querySelectorAll('#passwordMask span');
-
-      spans.forEach((span, index) => {
-        if (index < len) {
-          span.classList.add('filled');
-        } else {
-          span.classList.remove('filled');
-        }
-      });
-    }
-
-    // Form Submit Handler
-    passwordForm.addEventListener("submit", function(e) {
-      e.preventDefault();
-      const pwd = passwordInput.value.trim();
-
-      // Strict 6-Digit Numeric Check
-      if (!/^\d{6}$/.test(pwd)) {
-        message.textContent = "कृपया केवल 6 अंकों का Numeric Password दर्ज करें।";
-        message.className = "message error";
-        passwordInput.focus();
-        return;
-      }
-
-      verifyButton.disabled = true;
-      verifyButton.textContent = "Verifying...";
-      message.textContent = "Password verify किया जा रहा है...";
-      message.className = "message loading";
-
-      // JSONP Authentication Handler
-      const cbName = "auth_cb_" + Date.now();
-
-      window[cbName] = function(data) {
-        if (data.success === true) {
-          googleForm.src = data.formUrl;
-          passwordContainer.style.display = "none";
-          formContainer.style.display = "block";
-          document.body.style.background = "#ffffff";
-        } else {
-          verifyButton.disabled = false;
-          verifyButton.textContent = "Verify & Continue";
-          message.textContent = "गलत Password! सही Password दर्ज करें।";
-          message.className = "message error";
-          passwordInput.value = "";
-          updateMask(passwordInput);
-          passwordInput.focus();
-        }
-        delete window[cbName];
-        document.getElementById(cbName)?.remove();
-      };
-
-      const script = document.createElement("script");
-      script.id = cbName;
-      script.src = `${SCRIPT_URL}?password=${encodeURIComponent(pwd)}&prefix=${cbName}`;
-      
-      script.onerror = function() {
-        verifyButton.disabled = false;
-        verifyButton.textContent = "Verify & Continue";
-        message.textContent = "Connection Error! कृपया पुनः प्रयास करें।";
-        message.className = "message error";
-        delete window[cbName];
-      };
-
-      document.body.appendChild(script);
-    });
-  </script>
 </body>
 </html>
