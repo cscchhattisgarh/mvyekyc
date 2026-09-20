@@ -1,37 +1,100 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CSC ID Search Portal</title>
   <style>
-    * { 
-      margin: 0; 
-      padding: 0; 
-      box-sizing: border-box; 
-    }
-    html, body { 
-      width: 100%; 
-      height: 100%; 
-      overflow: hidden; 
-      background-color: #f1f5f9; 
-    }
-    iframe { 
-      width: 100%; 
-      height: 100%; 
-      border: none; 
-    }
+    * { box-sizing: border-box; font-family: Arial, sans-serif; }
+    body { background-color: #f1f5f9; padding: 20px; margin: 0; display: flex; justify-content: center; }
+    .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 800px; }
+    h2 { text-align: center; color: #1e293b; margin-top: 0; }
+    .search-box { display: flex; gap: 10px; margin-bottom: 20px; }
+    input { flex: 1; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 16px; outline: none; }
+    button { padding: 12px 24px; background: #2563eb; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+    button:disabled { background: #94a3b8; }
+    .message { text-align: center; font-weight: bold; margin: 15px 0; font-size: 14px; }
+    .error { color: #dc2626; }
+    .success { color: #16a34a; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    th, td { border: 1px solid #cbd5e1; padding: 10px; text-align: left; font-size: 14px; }
+    th { background: #f8fafc; color: #334155; }
   </style>
 </head>
 <body>
 
-  <!-- Mobile Compatibility Parameters Enabled -->
-  <iframe 
-    src="https://script.google.com/macros/s/AKfycbzWeLUVwl6W9ghVC4VqwdVJhrYdkv1X3ES17DzYq6HOyKbcrxUo1Sk1R5UhNLu9kRim/exec?embed=1" 
-    allow="geolocation; microphone; camera;"
-    sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
-    style="width:100%; height:100vh; border:none;">
-  </iframe>
+  <div class="card">
+    <h2>🔍 CSC ID Wise eKYC Search Portal</h2>
+    
+    <div class="search-box">
+      <input type="text" id="cscIdInput" placeholder="Enter CSC ID..." />
+      <button id="searchBtn" onclick="searchCSC()">Search</button>
+    </div>
 
+    <div id="statusMsg" class="message"></div>
+    <div id="resultArea"></div>
+  </div>
+
+  <script>
+    // Step 1 me mile Web App URL ko yahan update karein:
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzJ2Ow_-0ajSSwpOfnnO15MWRaePJ9k5BQZGyfgo6S7ow9Ah48Q4dH4Fg9AqcHU8OPE/exec";
+
+    async function searchCSC() {
+      const cscId = document.getElementById("cscIdInput").value.trim();
+      const statusMsg = document.getElementById("statusMsg");
+      const resultArea = document.getElementById("resultArea");
+      const searchBtn = document.getElementById("searchBtn");
+
+      if (!cscId) {
+        statusMsg.textContent = "Kripya CSC ID enter karein!";
+        statusMsg.className = "message error";
+        return;
+      }
+
+      searchBtn.disabled = true;
+      statusMsg.textContent = "Searching Database...";
+      statusMsg.className = "message";
+      resultArea.innerHTML = "";
+
+      try {
+        const response = await fetch(`${SCRIPT_URL}?cscId=${encodeURIComponent(cscId)}`);
+        const result = await response.json();
+
+        if (result.success) {
+          statusMsg.textContent = "Record Found!";
+          statusMsg.className = "message success";
+
+          // Table Header & Rows Dynamic Build
+          let tableHtml = `<p><strong>VLE Name:</strong> ${result.data.name} | <strong>District:</strong> ${result.data.district}</p>`;
+          tableHtml += `<table><thead><tr>`;
+          
+          result.data.tableHeaders.forEach(header => {
+            tableHtml += `<th>${header}</th>`;
+          });
+          tableHtml += `</tr></thead><tbody>`;
+
+          result.data.records.forEach(row => {
+            tableHtml += `<tr>`;
+            row.forEach(cell => {
+              tableHtml += `<td>${cell}</td>`;
+            });
+            tableHtml += `</tr>`;
+          });
+
+          tableHtml += `</tbody></table>`;
+          resultArea.innerHTML = tableHtml;
+
+        } else {
+          statusMsg.textContent = result.message || "CSC ID Nahi Mili!";
+          statusMsg.className = "message error";
+        }
+      } catch (err) {
+        statusMsg.textContent = "Error fetching data. Kripya punah prayas karein.";
+        statusMsg.className = "message error";
+      } finally {
+        searchBtn.disabled = false;
+      }
+    }
+  </script>
 </body>
 </html>
