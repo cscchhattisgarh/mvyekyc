@@ -1,100 +1,225 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CSC ID Search Portal</title>
+  <title>CSC ID Wise eKYC Search Portal</title>
   <style>
-    * { box-sizing: border-box; font-family: Arial, sans-serif; }
-    body { background-color: #f1f5f9; padding: 20px; margin: 0; display: flex; justify-content: center; }
-    .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 800px; }
-    h2 { text-align: center; color: #1e293b; margin-top: 0; }
-    .search-box { display: flex; gap: 10px; margin-bottom: 20px; }
-    input { flex: 1; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 16px; outline: none; }
-    button { padding: 12px 24px; background: #2563eb; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
-    button:disabled { background: #94a3b8; }
-    .message { text-align: center; font-weight: bold; margin: 15px 0; font-size: 14px; }
-    .error { color: #dc2626; }
-    .success { color: #16a34a; }
-    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-    th, td { border: 1px solid #cbd5e1; padding: 10px; text-align: left; font-size: 14px; }
-    th { background: #f8fafc; color: #334155; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    body {
+      background-color: #f1f5f9;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 30px 15px;
+    }
+    .card-container {
+      background: #ffffff;
+      width: 100%;
+      max-width: 850px;
+      border-radius: 16px;
+      padding: 35px 30px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    }
+    .portal-title {
+      text-align: center;
+      font-size: 24px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 25px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .search-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .search-input {
+      flex: 1;
+      padding: 12px 16px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 16px;
+      outline: none;
+      color: #1e293b;
+    }
+    .search-input:focus {
+      border-color: #2563eb;
+    }
+    .search-btn {
+      padding: 12px 28px;
+      background-color: #2563eb;
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .search-btn:hover {
+      background-color: #1d4ed8;
+    }
+    .search-btn:disabled {
+      background-color: #94a3b8;
+      cursor: not-allowed;
+    }
+    .status-msg {
+      text-align: center;
+      font-weight: 700;
+      font-size: 15px;
+      margin: 15px 0 20px 0;
+    }
+    .status-msg.success {
+      color: #16a34a;
+    }
+    .status-msg.error {
+      color: #dc2626;
+    }
+    .vle-info {
+      font-size: 16px;
+      color: #0f172a;
+      margin-bottom: 18px;
+    }
+    .vle-info strong {
+      font-weight: 700;
+    }
+    .table-wrapper {
+      width: 100%;
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #ffffff;
+    }
+    th, td {
+      border: 1px solid #e2e8f0;
+      padding: 12px 14px;
+      text-align: left;
+      font-size: 13.5px;
+      line-height: 1.4;
+      color: #1e293b;
+      vertical-align: top;
+    }
+    th {
+      background-color: #f8fafc;
+      font-weight: 700;
+      color: #1e293b;
+    }
+    tr:nth-child(even) {
+      background-color: #ffffff;
+    }
   </style>
 </head>
 <body>
 
-  <div class="card">
-    <h2>🔍 CSC ID Wise eKYC Search Portal</h2>
-    
-    <div class="search-box">
-      <input type="text" id="cscIdInput" placeholder="Enter CSC ID..." />
-      <button id="searchBtn" onclick="searchCSC()">Search</button>
+  <div class="card-container">
+    <div class="portal-title">
+      🔍 CSC ID Wise eKYC Search Portal
     </div>
 
-    <div id="statusMsg" class="message"></div>
-    <div id="resultArea"></div>
+    <div class="search-row">
+      <input type="text" id="cscIdInput" class="search-input" placeholder="Enter CSC ID..." />
+      <button id="searchBtn" class="search-btn" onclick="performSearch()">Search</button>
+    </div>
+
+    <div id="statusMsg" class="status-msg"></div>
+
+    <div id="resultContent" style="display: none;">
+      <div id="vleDetails" class="vle-info"></div>
+      <div class="table-wrapper">
+        <table id="dataTable">
+          <thead id="tableHead"></thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </div>
   </div>
 
   <script>
-    // Step 1 me mile Web App URL ko yahan update karein:
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzJ2Ow_-0ajSSwpOfnnO15MWRaePJ9k5BQZGyfgo6S7ow9Ah48Q4dH4Fg9AqcHU8OPE/exec";
+    // Apne Apps Script ka Web App URL yahan paste karein:
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzJ2Ow_-0ajSSwpOfnnO15MWRaePJ9k5BQZGyfgo6S7ow9Ah48Q4dH4Fg9AqcHU8OPE/exec";
 
-    async function searchCSC() {
+    async function performSearch() {
       const cscId = document.getElementById("cscIdInput").value.trim();
       const statusMsg = document.getElementById("statusMsg");
-      const resultArea = document.getElementById("resultArea");
+      const resultContent = document.getElementById("resultContent");
+      const vleDetails = document.getElementById("vleDetails");
+      const tableHead = document.getElementById("tableHead");
+      const tableBody = document.getElementById("tableBody");
       const searchBtn = document.getElementById("searchBtn");
 
       if (!cscId) {
-        statusMsg.textContent = "Kripya CSC ID enter karein!";
-        statusMsg.className = "message error";
+        statusMsg.textContent = "Please Enter Your CSC ID";
+        statusMsg.className = "status-msg error";
+        resultContent.style.display = "none";
         return;
       }
 
       searchBtn.disabled = true;
-      statusMsg.textContent = "Searching Database...";
-      statusMsg.className = "message";
-      resultArea.innerHTML = "";
+      statusMsg.textContent = "Searching...";
+      statusMsg.className = "status-msg";
+      resultContent.style.display = "none";
 
       try {
-        const response = await fetch(`${SCRIPT_URL}?cscId=${encodeURIComponent(cscId)}`);
-        const result = await response.json();
+        const response = await fetch(`${APPS_SCRIPT_URL}?cscId=${encodeURIComponent(cscId)}`);
+        const res = await response.json();
 
-        if (result.success) {
+        if (res.success) {
           statusMsg.textContent = "Record Found!";
-          statusMsg.className = "message success";
+          statusMsg.className = "status-msg success";
 
-          // Table Header & Rows Dynamic Build
-          let tableHtml = `<p><strong>VLE Name:</strong> ${result.data.name} | <strong>District:</strong> ${result.data.district}</p>`;
-          tableHtml += `<table><thead><tr>`;
-          
-          result.data.tableHeaders.forEach(header => {
-            tableHtml += `<th>${header}</th>`;
+          // VLE Details Row
+          vleDetails.innerHTML = `<strong>VLE Name:</strong> ${res.data.name} | <strong>District:</strong> ${res.data.district}`;
+
+          // Header Row
+          let headHtml = "<tr>";
+          res.data.tableHeaders.forEach(headerText => {
+            headHtml += `<th>${headerText}</th>`;
           });
-          tableHtml += `</tr></thead><tbody>`;
+          headHtml += "</tr>";
+          tableHead.innerHTML = headHtml;
 
-          result.data.records.forEach(row => {
-            tableHtml += `<tr>`;
-            row.forEach(cell => {
-              tableHtml += `<td>${cell}</td>`;
+          // Data Rows
+          let bodyHtml = "";
+          res.data.records.forEach(row => {
+            bodyHtml += "<tr>";
+            row.forEach(cellValue => {
+              bodyHtml += `<td>${cellValue}</td>`;
             });
-            tableHtml += `</tr>`;
+            bodyHtml += "</tr>";
           });
+          tableBody.innerHTML = bodyHtml;
 
-          tableHtml += `</tbody></table>`;
-          resultArea.innerHTML = tableHtml;
-
+          resultContent.style.display = "block";
         } else {
-          statusMsg.textContent = result.message || "CSC ID Nahi Mili!";
-          statusMsg.className = "message error";
+          statusMsg.textContent = res.message || "CSC ID Not Found";
+          statusMsg.className = "status-msg error";
         }
       } catch (err) {
-        statusMsg.textContent = "Error fetching data. Kripya punah prayas karein.";
-        statusMsg.className = "message error";
+        statusMsg.textContent = "Error loading data. Please try again.";
+        statusMsg.className = "status-msg error";
       } finally {
         searchBtn.disabled = false;
       }
     }
+
+    // Allow search on pressing Enter key
+    document.getElementById("cscIdInput").addEventListener("keypress", function(e) {
+      if (e.key === "Enter") {
+        performSearch();
+      }
+    });
   </script>
 </body>
 </html>
