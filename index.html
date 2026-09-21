@@ -170,21 +170,6 @@
   <script>
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyqE7EoioETIHDjQKnvyGmH2S-oV_AEVEuu3OlDHUOaL4OnZoLBwlpgPhQCHYWufl4/exec";
 
-    // Date formatting function to convert GMT string to dd/mm/yyyy
-    function formatDateValue(val) {
-      if (!val || val === "-") return "-";
-      if (typeof val === 'string' && (val.includes("GMT") || val.includes("T"))) {
-        const d = new Date(val);
-        if (!isNaN(d.getTime())) {
-          const day = String(d.getDate()).padStart(2, '0');
-          const month = String(d.getMonth() + 1).padStart(2, '0');
-          const year = d.getFullYear();
-          return `${day}/${month}/${year}`;
-        }
-      }
-      return val;
-    }
-
     async function performSearch() {
       const cscIdInput = document.getElementById("cscIdInput");
       const cscId = cscIdInput.value.trim();
@@ -192,7 +177,6 @@
       const resultContent = document.getElementById("resultContent");
       const searchBtn = document.getElementById("searchBtn");
 
-      // Strict 12-Digit Numeric Validation
       if (!cscId || cscId.length !== 12 || !/^\d{12}$/.test(cscId)) {
         statusMsg.textContent = "Please enter a valid 12-digit CSC ID";
         statusMsg.className = "status-msg error";
@@ -228,8 +212,7 @@
           res.data.records.forEach(row => {
             bodyHtml += "<tr>";
             row.forEach(cellValue => {
-              const formattedCell = formatDateValue(cellValue);
-              bodyHtml += `<td>${formattedCell}</td>`;
+              bodyHtml += `<td>${cellValue}</td>`;
             });
             bodyHtml += "</tr>";
           });
@@ -241,7 +224,7 @@
           statusMsg.className = "status-msg error";
         }
       } catch (err) {
-        statusMsg.textContent = "Error loading data. Please check connection and try again.";
+        statusMsg.textContent = "Error loading data. Please try again.";
         statusMsg.className = "status-msg error";
       } finally {
         searchBtn.disabled = false;
