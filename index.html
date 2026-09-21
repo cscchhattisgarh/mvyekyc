@@ -170,6 +170,21 @@
   <script>
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyqE7EoioETIHDjQKnvyGmH2S-oV_AEVEuu3OlDHUOaL4OnZoLBwlpgPhQCHYWufl4/exec";
 
+    // Date Format Converter: Handles GMT strings & ISO strings to dd/mm/yyyy
+    function formatCellText(val) {
+      if (!val || val === "-") return "-";
+      if (typeof val === 'string' && (val.includes("GMT") || val.includes("GMT+") || val.includes("India Standard Time"))) {
+        const d = new Date(val);
+        if (!isNaN(d.getTime())) {
+          const day = String(d.getDate()).padStart(2, '0');
+          const month = String(d.getMonth() + 1).padStart(2, '0');
+          const year = d.getFullYear();
+          return `${day}/${month}/${year}`;
+        }
+      }
+      return val;
+    }
+
     async function performSearch() {
       const cscIdInput = document.getElementById("cscIdInput");
       const cscId = cscIdInput.value.trim();
@@ -212,7 +227,8 @@
           res.data.records.forEach(row => {
             bodyHtml += "<tr>";
             row.forEach(cellValue => {
-              bodyHtml += `<td>${cellValue}</td>`;
+              const formattedVal = formatCellText(cellValue);
+              bodyHtml += `<td>${formattedVal}</td>`;
             });
             bodyHtml += "</tr>";
           });
