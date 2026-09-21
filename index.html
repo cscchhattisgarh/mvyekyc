@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CSC ID Wise eKYC Search Portal</title>
+  <title>CSC ID wise MVY eKYC Registration Search Portal</title>
   <style>
     * {
       box-sizing: border-box;
@@ -22,26 +22,24 @@
     .card-container {
       background: #ffffff;
       width: 100%;
-      max-width: 850px;
+      max-width: 950px;
       border-radius: 16px;
       padding: 35px 30px;
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e2e8f0;
     }
     .portal-title {
       text-align: center;
-      font-size: 24px;
-      font-weight: 700;
+      font-size: 22px;
+      font-weight: 800;
       color: #0f172a;
       margin-bottom: 25px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
+      line-height: 1.3;
     }
     .search-row {
       display: flex;
       gap: 12px;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
     }
     .search-input {
       flex: 1;
@@ -56,15 +54,14 @@
       border-color: #2563eb;
     }
     .search-btn {
-      padding: 12px 28px;
+      padding: 12px 32px;
       background-color: #2563eb;
       color: #ffffff;
       border: none;
       border-radius: 8px;
-      font-size: 15px;
+      font-size: 16px;
       font-weight: 600;
       cursor: pointer;
-      transition: background-color 0.2s;
     }
     .search-btn:hover {
       background-color: #1d4ed8;
@@ -77,25 +74,18 @@
       text-align: center;
       font-weight: 700;
       font-size: 15px;
-      margin: 15px 0 20px 0;
-    }
-    .status-msg.success {
-      color: #16a34a;
+      margin: 15px 0;
     }
     .status-msg.error {
       color: #dc2626;
     }
-    .vle-info {
-      font-size: 16px;
-      color: #0f172a;
-      margin-bottom: 18px;
-    }
-    .vle-info strong {
-      font-weight: 700;
-    }
+
     .table-wrapper {
       width: 100%;
       overflow-x: auto;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
     }
     table {
       width: 100%;
@@ -103,21 +93,29 @@
       background: #ffffff;
     }
     th, td {
-      border: 1px solid #e2e8f0;
+      border: 1px solid #cbd5e1;
       padding: 12px 14px;
       text-align: left;
-      font-size: 13.5px;
-      line-height: 1.4;
+      font-size: 14px;
       color: #1e293b;
-      vertical-align: top;
+      vertical-align: middle;
     }
-    th {
-      background-color: #f8fafc;
+
+    /* Top User Info Table Style (Dark Navy Header) */
+    .user-info-table th {
+      background-color: #1e293b;
+      color: #ffffff;
       font-weight: 700;
-      color: #1e293b;
+      text-transform: uppercase;
+      font-size: 13px;
     }
-    tr:nth-child(even) {
-      background-color: #ffffff;
+
+    /* Main Data Table Style (Bright Blue Header) */
+    .data-table th {
+      background-color: #2563eb;
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 13.5px;
     }
   </style>
 </head>
@@ -125,20 +123,40 @@
 
   <div class="card-container">
     <div class="portal-title">
-      🔍 CSC ID Wise eKYC Search Portal
+      CSC ID wise MVY eKYC<br>Registration Search Portal
     </div>
 
     <div class="search-row">
-      <input type="text" id="cscIdInput" class="search-input" placeholder="Enter CSC ID..." />
+      <input type="text" id="cscIdInput" class="search-input" placeholder="" />
       <button id="searchBtn" class="search-btn" onclick="performSearch()">Search</button>
     </div>
 
     <div id="statusMsg" class="status-msg"></div>
 
     <div id="resultContent" style="display: none;">
-      <div id="vleDetails" class="vle-info"></div>
+      <!-- Top VLE Summary Table -->
       <div class="table-wrapper">
-        <table id="dataTable">
+        <table class="user-info-table">
+          <thead>
+            <tr>
+              <th>CSC ID</th>
+              <th>NAME</th>
+              <th>DISTRICT</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td id="infoCscId">-</td>
+              <td id="infoName">-</td>
+              <td id="infoDistrict">-</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Main Records Table -->
+      <div class="table-wrapper">
+        <table class="data-table">
           <thead id="tableHead"></thead>
           <tbody id="tableBody"></tbody>
         </table>
@@ -147,16 +165,28 @@
   </div>
 
   <script>
-    // Apne Apps Script ka Web App URL yahan paste karein:
+    // Updated Script URL taken from your current code:
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzJ2Ow_-0ajSSwpOfnnO15MWRaePJ9k5BQZGyfgo6S7ow9Ah48Q4dH4Fg9AqcHU8OPE/exec";
+
+    // Date formatting helper for clean dd/mm/yyyy display
+    function formatDateString(val) {
+      if (!val || val === "-") return "-";
+      if (typeof val === 'string' && val.includes("GMT")) {
+        const d = new Date(val);
+        if (!isNaN(d.getTime())) {
+          const day = String(d.getDate()).padStart(2, '0');
+          const month = String(d.getMonth() + 1).padStart(2, '0');
+          const year = d.getFullYear();
+          return `${day}/${month}/${year}`;
+        }
+      }
+      return val;
+    }
 
     async function performSearch() {
       const cscId = document.getElementById("cscIdInput").value.trim();
       const statusMsg = document.getElementById("statusMsg");
       const resultContent = document.getElementById("resultContent");
-      const vleDetails = document.getElementById("vleDetails");
-      const tableHead = document.getElementById("tableHead");
-      const tableBody = document.getElementById("tableBody");
       const searchBtn = document.getElementById("searchBtn");
 
       if (!cscId) {
@@ -176,30 +206,32 @@
         const res = await response.json();
 
         if (res.success) {
-          statusMsg.textContent = "Record Found!";
-          statusMsg.className = "status-msg success";
+          statusMsg.textContent = "";
 
-          // VLE Details Row
-          vleDetails.innerHTML = `<strong>VLE Name:</strong> ${res.data.name} | <strong>District:</strong> ${res.data.district}`;
+          // Populate Top Info Table
+          document.getElementById("infoCscId").textContent = res.data.cscId || cscId;
+          document.getElementById("infoName").textContent = res.data.name || "-";
+          document.getElementById("infoDistrict").textContent = res.data.district || "-";
 
-          // Header Row
+          // Header Row for Main Table
           let headHtml = "<tr>";
           res.data.tableHeaders.forEach(headerText => {
             headHtml += `<th>${headerText}</th>`;
           });
           headHtml += "</tr>";
-          tableHead.innerHTML = headHtml;
+          document.getElementById("tableHead").innerHTML = headHtml;
 
-          // Data Rows
+          // Data Rows for Main Table
           let bodyHtml = "";
           res.data.records.forEach(row => {
             bodyHtml += "<tr>";
             row.forEach(cellValue => {
-              bodyHtml += `<td>${cellValue}</td>`;
+              const formattedValue = formatDateString(cellValue);
+              bodyHtml += `<td>${formattedValue}</td>`;
             });
             bodyHtml += "</tr>";
           });
-          tableBody.innerHTML = bodyHtml;
+          document.getElementById("tableBody").innerHTML = bodyHtml;
 
           resultContent.style.display = "block";
         } else {
@@ -214,7 +246,6 @@
       }
     }
 
-    // Allow search on pressing Enter key
     document.getElementById("cscIdInput").addEventListener("keypress", function(e) {
       if (e.key === "Enter") {
         performSearch();
