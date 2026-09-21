@@ -125,7 +125,14 @@
     </div>
 
     <div class="search-row">
-      <input type="text" id="cscIdInput" class="search-input" placeholder="" />
+      <input 
+        type="text" 
+        id="cscIdInput" 
+        class="search-input" 
+        placeholder="Enter 12-digit CSC ID..." 
+        maxlength="12"
+        oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+      />
       <button id="searchBtn" class="search-btn" onclick="performSearch()">Search</button>
     </div>
 
@@ -163,14 +170,31 @@
   <script>
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyqE7EoioETIHDjQKnvyGmH2S-oV_AEVEuu3OlDHUOaL4OnZoLBwlpgPhQCHYWufl4/exec";
 
+    // Date formatting function to convert GMT string to dd/mm/yyyy
+    function formatDateValue(val) {
+      if (!val || val === "-") return "-";
+      if (typeof val === 'string' && (val.includes("GMT") || val.includes("T"))) {
+        const d = new Date(val);
+        if (!isNaN(d.getTime())) {
+          const day = String(d.getDate()).padStart(2, '0');
+          const month = String(d.getMonth() + 1).padStart(2, '0');
+          const year = d.getFullYear();
+          return `${day}/${month}/${year}`;
+        }
+      }
+      return val;
+    }
+
     async function performSearch() {
-      const cscId = document.getElementById("cscIdInput").value.trim();
+      const cscIdInput = document.getElementById("cscIdInput");
+      const cscId = cscIdInput.value.trim();
       const statusMsg = document.getElementById("statusMsg");
       const resultContent = document.getElementById("resultContent");
       const searchBtn = document.getElementById("searchBtn");
 
-      if (!cscId) {
-        statusMsg.textContent = "Please Enter Your CSC ID";
+      // Strict 12-Digit Numeric Validation
+      if (!cscId || cscId.length !== 12 || !/^\d{12}$/.test(cscId)) {
+        statusMsg.textContent = "Please enter a valid 12-digit CSC ID";
         statusMsg.className = "status-msg error";
         resultContent.style.display = "none";
         return;
@@ -204,7 +228,8 @@
           res.data.records.forEach(row => {
             bodyHtml += "<tr>";
             row.forEach(cellValue => {
-              bodyHtml += `<td>${cellValue}</td>`;
+              const formattedCell = formatDateValue(cellValue);
+              bodyHtml += `<td>${formattedCell}</td>`;
             });
             bodyHtml += "</tr>";
           });
