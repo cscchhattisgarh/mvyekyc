@@ -101,7 +101,6 @@
       vertical-align: middle;
     }
 
-    /* Top User Info Table Style (Dark Navy Header) */
     .user-info-table th {
       background-color: #1e293b;
       color: #ffffff;
@@ -110,7 +109,6 @@
       font-size: 13px;
     }
 
-    /* Main Data Table Style (Bright Blue Header) */
     .data-table th {
       background-color: #2563eb;
       color: #ffffff;
@@ -134,7 +132,6 @@
     <div id="statusMsg" class="status-msg"></div>
 
     <div id="resultContent" style="display: none;">
-      <!-- Top VLE Summary Table -->
       <div class="table-wrapper">
         <table class="user-info-table">
           <thead>
@@ -154,7 +151,6 @@
         </table>
       </div>
 
-      <!-- Main Records Table -->
       <div class="table-wrapper">
         <table class="data-table">
           <thead id="tableHead"></thead>
@@ -165,23 +161,7 @@
   </div>
 
   <script>
-    // Updated Script URL taken from your current code:
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzJ2Ow_-0ajSSwpOfnnO15MWRaePJ9k5BQZGyfgo6S7ow9Ah48Q4dH4Fg9AqcHU8OPE/exec";
-
-    // Date formatting helper for clean dd/mm/yyyy display
-    function formatDateString(val) {
-      if (!val || val === "-") return "-";
-      if (typeof val === 'string' && val.includes("GMT")) {
-        const d = new Date(val);
-        if (!isNaN(d.getTime())) {
-          const day = String(d.getDate()).padStart(2, '0');
-          const month = String(d.getMonth() + 1).padStart(2, '0');
-          const year = d.getFullYear();
-          return `${day}/${month}/${year}`;
-        }
-      }
-      return val;
-    }
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyqE7EoioETIHDjQKnvyGmH2S-oV_AEVEuu3OlDHUOaL4OnZoLBwlpgPhQCHYWufl4/exec";
 
     async function performSearch() {
       const cscId = document.getElementById("cscIdInput").value.trim();
@@ -202,18 +182,17 @@
       resultContent.style.display = "none";
 
       try {
-        const response = await fetch(`${APPS_SCRIPT_URL}?cscId=${encodeURIComponent(cscId)}`);
+        const fetchUrl = `${APPS_SCRIPT_URL}?cscId=${encodeURIComponent(cscId)}`;
+        const response = await fetch(fetchUrl, { method: 'GET', redirect: 'follow' });
         const res = await response.json();
 
         if (res.success) {
           statusMsg.textContent = "";
 
-          // Populate Top Info Table
           document.getElementById("infoCscId").textContent = res.data.cscId || cscId;
           document.getElementById("infoName").textContent = res.data.name || "-";
           document.getElementById("infoDistrict").textContent = res.data.district || "-";
 
-          // Header Row for Main Table
           let headHtml = "<tr>";
           res.data.tableHeaders.forEach(headerText => {
             headHtml += `<th>${headerText}</th>`;
@@ -221,13 +200,11 @@
           headHtml += "</tr>";
           document.getElementById("tableHead").innerHTML = headHtml;
 
-          // Data Rows for Main Table
           let bodyHtml = "";
           res.data.records.forEach(row => {
             bodyHtml += "<tr>";
             row.forEach(cellValue => {
-              const formattedValue = formatDateString(cellValue);
-              bodyHtml += `<td>${formattedValue}</td>`;
+              bodyHtml += `<td>${cellValue}</td>`;
             });
             bodyHtml += "</tr>";
           });
@@ -239,7 +216,7 @@
           statusMsg.className = "status-msg error";
         }
       } catch (err) {
-        statusMsg.textContent = "Error loading data. Please try again.";
+        statusMsg.textContent = "Error loading data. Please check connection and try again.";
         statusMsg.className = "status-msg error";
       } finally {
         searchBtn.disabled = false;
